@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>三年级华文标点符号比拼</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&display=swap');
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background-color: #f0f9ff;
+        }
+        .title-font {
+            font-family: 'ZCOOL KuaiLe', cursive;
+        }
+        .card-bounce {
+            transition: transform 0.2s;
+        }
+        .card-bounce:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-4">
+
+    <div id="game-container" class="bg-white w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden border-4 border-blue-400">
+        <!-- 首页 -->
+        <div id="start-screen" class="p-8 text-center">
+            <h1 class="title-font text-5xl text-blue-600 mb-6">标点符号大比拼</h1>
+            <p class="text-gray-600 mb-8 text-xl">挑战你的观察力，成为标点符号小达人！</p>
+            <div class="space-y-4">
+                <button onclick="startGame('single')" class="w-full bg-yellow-400 hover:bg-yellow-500 text-blue-900 font-bold py-4 px-8 rounded-2xl text-2xl shadow-lg card-bounce">
+                    🌟 单人挑战模式
+                </button>
+                <p class="text-sm text-gray-400">（正确得10分，错误扣5分）</p>
+            </div>
+            <div class="mt-12">
+                <img src="https://img.icons8.com/bubbles/200/000000/grammar.png" alt="Punctuation Icon" class="mx-auto">
+            </div>
+        </div>
+
+        <!-- 游戏界面 -->
+        <div id="quiz-screen" class="hidden p-6">
+            <div class="flex justify-between items-center mb-6">
+                <div class="bg-blue-100 px-4 py-2 rounded-full text-blue-700 font-bold">
+                    得分: <span id="score">0</span>
+                </div>
+                <div class="bg-orange-100 px-4 py-2 rounded-full text-orange-700 font-bold">
+                    题目: <span id="question-count">1/10</span>
+                </div>
+            </div>
+
+            <div id="question-box" class="mb-8">
+                <p class="text-gray-500 mb-2 font-bold">请选择最合适的标点符号：</p>
+                <div id="question-text" class="text-2xl font-bold text-gray-800 leading-relaxed bg-blue-50 p-6 rounded-2xl border-2 border-dashed border-blue-300">
+                    <!-- 题目内容加载处 -->
+                </div>
+            </div>
+
+            <div id="options-grid" class="grid grid-cols-2 gap-4">
+                <!-- 选项按钮加载处 -->
+            </div>
+
+            <div id="feedback" class="mt-6 h-12 text-center text-xl font-bold"></div>
+        </div>
+
+        <!-- 结算界面 -->
+        <div id="result-screen" class="hidden p-8 text-center">
+            <h2 class="title-font text-4xl text-blue-600 mb-4">比拼结束！</h2>
+            <div class="text-6xl font-bold text-yellow-500 mb-6" id="final-score">0</div>
+            <p id="result-message" class="text-xl text-gray-700 mb-8"></p>
+            <button onclick="resetGame()" class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-10 rounded-full text-xl shadow-md">
+                再玩一次
+            </button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                text: "明华，（ ）你在做什么（ ）",
+                options: ["？ ？", "， ？", "， 。", "！ ？"],
+                correct: 1,
+                hint: "开头是称呼，结尾是询问。"
+            },
+            {
+                text: "妈妈买了一些水果（ ）有苹果、香蕉和西瓜。",
+                options: ["，", "。", "：", "？"],
+                correct: 2,
+                hint: "后面在列举水果，需要提示号。"
+            },
+            {
+                text: "这朵花真香啊（ ）",
+                options: ["。", "！", "？", "，"],
+                correct: 1,
+                hint: "表达赞叹的语气。"
+            },
+            {
+                text: "我最喜欢看的书是（ ）西游记（ ）。",
+                options: ["“ ”", "《 》", "（ ）", "‘ ’"],
+                correct: 1,
+                hint: "书的名字要用书名号。"
+            },
+            {
+                text: "老师说（ ）（ ）大家要保持安静。（ ）",
+                options: ["： “ ”", "， “ ”", "： ‘ ’", "。 “ ”"],
+                correct: 0,
+                hint: "引用别人的话，前面用冒号。"
+            },
+            {
+                text: "文具盒里有铅笔（ ）橡皮和尺子。",
+                options: ["，", "、", "。", "；"],
+                correct: 1,
+                hint: "词语之间的停顿用顿号。"
+            },
+            {
+                text: "你吃过晚饭了吗（ ）",
+                options: ["。", "！", "？", "，"],
+                correct: 2,
+                hint: "这是一个疑问句。"
+            },
+            {
+                text: "下雨了（ ）我们快跑吧（ ）",
+                options: ["， ！", "。 。", "！ ？", "， 。"],
+                correct: 0,
+                hint: "先叙述情况，再表达急促语气。"
+            },
+            {
+                text: "今天的天气真好（ ）太阳公公露出了笑脸。",
+                options: ["，", "。", "！", "？"],
+                correct: 0,
+                hint: "一句话还没说完，需要稍微停顿。"
+            },
+            {
+                text: "哥哥问（ ）（ ）弟弟去哪儿了（ ）（ ）",
+                options: ["： “ ？ ”", "， “ 。 ”", "： “ ！ ”", "。 “ ？ ”"],
+                correct: 0,
+                hint: "问句的引用。"
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+        let gameActive = false;
+
+        function startGame(mode) {
+            document.getElementById('start-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            if (currentQuestion >= questions.length) {
+                showResult();
+                return;
+            }
+
+            const q = questions[currentQuestion];
+            document.getElementById('question-count').innerText = `${currentQuestion + 1}/${questions.length}`;
+            document.getElementById('question-text').innerText = q.text;
+            
+            const optionsGrid = document.getElementById('options-grid');
+            optionsGrid.innerHTML = '';
+            
+            q.options.forEach((opt, index) => {
+                const btn = document.createElement('button');
+                btn.className = "bg-white border-2 border-blue-200 hover:border-blue-500 hover:bg-blue-50 p-4 rounded-xl text-xl font-bold text-blue-800 shadow-sm card-bounce";
+                btn.innerText = opt;
+                btn.onclick = () => checkAnswer(index);
+                optionsGrid.appendChild(btn);
+            });
+            
+            document.getElementById('feedback').innerText = '';
+        }
+
+        function checkAnswer(selectedIndex) {
+            const feedback = document.getElementById('feedback');
+            const q = questions[currentQuestion];
+            
+            if (selectedIndex === q.correct) {
+                score += 10;
+                feedback.innerText = "✅ 太棒了！回答正确！";
+                feedback.className = "mt-6 h-12 text-center text-xl font-bold text-green-500";
+            } else {
+                score = Math.max(0, score - 5);
+                feedback.innerText = "❌ 哎呀，再想想看！";
+                feedback.className = "mt-6 h-12 text-center text-xl font-bold text-red-500";
+            }
+            
+            document.getElementById('score').innerText = score;
+            
+            // 禁用按钮防止连续点击
+            const buttons = document.querySelectorAll('#options-grid button');
+            buttons.forEach(b => b.disabled = true);
+
+            setTimeout(() => {
+                currentQuestion++;
+                loadQuestion();
+            }, 1200);
+        }
+
+        function showResult() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            document.getElementById('final-score').innerText = score;
+            
+            let msg = "";
+            if (score >= 90) msg = "你是标点符号小状元！💯";
+            else if (score >= 70) msg = "表现不错，继续加油！🌟";
+            else msg = "多练习一下，你会更棒的！💪";
+            
+            document.getElementById('result-message').innerText = msg;
+        }
+
+        function resetGame() {
+            currentQuestion = 0;
+            score = 0;
+            document.getElementById('score').innerText = "0";
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('start-screen').classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>
